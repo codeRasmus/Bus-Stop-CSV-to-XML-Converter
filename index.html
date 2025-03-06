@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bus Stop Information</title>
+  </head>
+  <body>
+    <h2>Bus Stop Information</h2>
+    <!-- Filinput for at uploade XML -->
+    <input type="file" id="fileInput" accept=".xml" />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Navn</th>
+          <th>Længdegrad</th>
+          <th>Breddegrad</th>
+          <th>By</th>
+          <th>Priszone</th>
+        </tr>
+      </thead>
+      <tbody id="busTableBody">
+        <!-- Data vil blive tilføjet her -->
+      </tbody>
+    </table>
+    <script>
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", createTable);
+
+      function createTable(event) {
+        const file = event.target.files[0]; // Get the file
+        if (file && file.type === "text/xml") {
+          const reader = new FileReader();
+
+          // Read the file as text
+          reader.onload = function (e) {
+            const xmlContent = e.target.result;
+
+            // Parse the XML with DOMParser
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(
+              xmlContent,
+              "application/xml"
+            );
+
+            // Get all <bus> elements
+            const buses = xmlDoc.getElementsByTagName("bus");
+
+            // Get the tbody element where we will insert the data
+            const tableBody = document.getElementById("busTableBody");
+            tableBody.innerHTML = ""; // Clear the table if there is old data
+
+            // Loop through all buses and display data
+            Array.from(buses).forEach((bus) => {
+              const stopName =
+                bus.getElementsByTagName("STOP_NAME")[0]?.textContent || "";
+              const posX =
+                bus.getElementsByTagName("STOP_POS_X")[0]?.textContent || "";
+              const posY =
+                bus.getElementsByTagName("STOP_POS_Y")[0]?.textContent || "";
+              const place =
+                bus.getElementsByTagName("PLACE")[0]?.textContent || "";
+              const fareZone =
+                bus.getElementsByTagName("FARE_ZONE1_NR")[0]?.textContent || "";
+
+              // Create a new table row
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                            <td>${stopName}</td>
+                            <td>${posX}</td>
+                            <td>${posY}</td>
+                            <td>${place}</td>
+                            <td>${fareZone}</td>
+                        `;
+              tableBody.appendChild(row); // Append the row to the table
+            });
+          };
+
+          // Read the file
+          reader.readAsText(file);
+        } else {
+          alert("Vælg venligst en XML-fil.");
+        }
+      }
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>
